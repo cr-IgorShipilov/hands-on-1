@@ -216,19 +216,3 @@ rm -f hosts.ini servers.yaml setup
 part of what you'd commit for teammates (or future-you) to reuse.
 
 ---
-
-## Wrap-up questions
-
-1. What's the difference between putting an instruction in `CLAUDE.md`
-   versus a skill in `.claude/skills/`? When would you use each?
-2. Why does `.claude/settings.json` pre-approve specific `go` subcommands
-   instead of just allowing all `Bash` commands?
-3. In Step 8, what did Claude get "wrong" without the skill that the
-   skill fixed? What does that tell you about when a skill is worth
-   writing?
-4. `CLAUDE.md` says "don't add third-party dependencies." What happens
-   if you ask Claude to use a YAML library anyway — does it push back,
-   comply, or ask you to confirm?
-5. This project's settings file is `.claude/settings.json` (shared,
-   commit it). What would you put in `.claude/settings.local.json`
-   instead, and why would you keep that one out of version control?

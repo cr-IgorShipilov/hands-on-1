@@ -226,12 +226,3 @@ rm -f hosts.ini servers.yaml setup
 ```
 
 ---
-
-## Wrap-up questions
-
-1. What is the difference between a long flag (`--init`) and its short form (`-i`) in this tool?
-2. Which file does `--check` and `--deploy` read from? What happens if that file is missing?
-3. Why might a real-world version of this tool use a proper YAML library instead of a hand-written parser?
-4. What would you need to change in `main.go` to support a 4th or 5th server?
-5. `--configure` overwrites existing files without asking. Is that good or risky design? How would you improve it?
-6. `--status` happily reports a healthy cluster even if you never ran `--deploy`. Where does it get its data from, and what would a real version have to query instead?
