@@ -21,10 +21,12 @@ the network or installs real software. Flags: `--init`/`-i`,
 
 ## Conventions
 
-- **Single file, standard library only.** Do not add third-party
-  dependencies (e.g. a YAML library) or introduce a `go.mod` requiring
-  `go get` — the point of this project is that a student can `go build`
-  it with zero setup. Keep `servers.yaml` parsing/writing hand-rolled.
+- **Single file, standard library only.** `go.mod` declares the module
+  and nothing else — do not add third-party dependencies (e.g. a YAML
+  library) or any `require` line that would need a `go get`, and never
+  add a `go.sum`. The point of this project is that a student can
+  `go build` it with zero setup. Keep `servers.yaml` parsing/writing
+  hand-rolled.
 - **Flags come in long/short pairs.** Every flag is registered twice with
   `flag.BoolVar`, both pointing at the same variable, e.g. `--check` and
   `-chk`. Keep new flags consistent with this pattern (see

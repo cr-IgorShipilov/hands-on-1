@@ -5,6 +5,7 @@
 //  2. --configure  fill those templates with fake (but realistic) data
 //  3. --check      pretend to test connectivity to each server
 //  4. --deploy     pretend to install RKE2 on each server
+//  5. --status     pretend to report the running cluster's health
 //
 // Nothing here touches the network or installs real software - it's all
 // simulated output with delays, meant to teach CLI flag handling, file I/O,
@@ -50,6 +51,7 @@ func main() {
 		configureFlag bool
 		checkFlag     bool
 		deployFlag    bool
+		statusFlag    bool
 	)
 
 	// Each option is registered twice (long + short) so both forms update
@@ -66,10 +68,13 @@ func main() {
 	flag.BoolVar(&deployFlag, "deploy", false, "simulate deploying RKE2 on servers.yaml")
 	flag.BoolVar(&deployFlag, "d", false, "shorthand for --deploy")
 
+	flag.BoolVar(&statusFlag, "status", false, "show a simulated health summary of the deployed cluster")
+	flag.BoolVar(&statusFlag, "s", false, "shorthand for --status")
+
 	flag.Usage = printUsage
 	flag.Parse()
 
-	if !initFlag && !configureFlag && !checkFlag && !deployFlag {
+	if !initFlag && !configureFlag && !checkFlag && !deployFlag && !statusFlag {
 		printUsage()
 		os.Exit(1)
 	}
@@ -88,6 +93,9 @@ func main() {
 	if deployFlag {
 		runDeploy()
 	}
+	if statusFlag {
+		runStatus()
+	}
 }
 
 func printUsage() {
@@ -101,9 +109,10 @@ Flags:
   -cfg, --configure    fill templates with fake data for 3 servers
   -chk, --check        simulate a connectivity check
   -d,   --deploy       simulate an RKE2 deployment
+  -s,   --status       show a simulated cluster health summary
 
 Flags can be combined, e.g.:
-  setup --init --configure --check --deploy
+  setup --init --configure --check --deploy --status
 `, colorBold, colorReset, hostsFile, serversFile)
 }
 
@@ -321,6 +330,48 @@ func runDeploySteps(steps []string) {
 		time.Sleep(400 * time.Millisecond)
 		fmt.Printf("      %-55s %s[done]%s\n", step, colorGreen, colorReset)
 	}
+}
+
+// ---------------------------------------------------------------------
+// --status
+// ---------------------------------------------------------------------
+
+// rke2Version is the fake version the simulated cluster reports.
+const rke2Version = "v1.29.4+rke2r1"
+
+func runStatus() {
+	fmt.Printf("%s==> Cluster health summary%s\n", colorCyan, colorReset)
+
+	servers := loadServersOrExit()
+
+	fmt.Printf("  %s- version%s  %s\n", colorGreen, colorReset, rke2Version)
+	fmt.Printf("  %s- nodes%s    %d/%d Ready\n", colorGreen, colorReset, len(servers), len(servers))
+	fmt.Println()
+
+	fmt.Printf("  %s%-22s %-8s %-10s %-10s %s%s\n",
+		colorBold, "NAME", "ROLE", "STATUS", "UPTIME", "VERSION", colorReset)
+	for i, s := range servers {
+		time.Sleep(200 * time.Millisecond)
+
+		role := "server"
+		if i == 0 {
+			role = "leader"
+		}
+		fmt.Printf("  %-22s %-8s %sReady%s      %-10s %s\n",
+			s.FQDN, role, colorGreen, colorReset, fakeUptime(), rke2Version)
+	}
+
+	fmt.Println()
+	fmt.Printf("  %s- etcd%s     healthy (%d/%d members)\n", colorGreen, colorReset, len(servers), len(servers))
+	fmt.Printf("  %s- api%s      https://%s:6443 responding\n", colorGreen, colorReset, servers[0].IP)
+
+	fmt.Printf("%s\nNext step:%s re-run %ssetup --check%s any time to re-test connectivity.\n",
+		colorGreen, colorReset, colorBold, colorReset)
+}
+
+// fakeUptime returns a believable, made-up uptime string like "3d4h12m".
+func fakeUptime() string {
+	return fmt.Sprintf("%dd%dh%dm", 1+rand.Intn(9), rand.Intn(24), rand.Intn(60))
 }
 
 // ---------------------------------------------------------------------

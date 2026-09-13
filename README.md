@@ -40,21 +40,25 @@ Verify again with `go version` before continuing.
 
 ## Step 2 — Get the project files
 
-Create a folder for the lab and place `main.go` inside it:
+Create a folder for the lab and place `main.go` and `go.mod` inside it:
 
 ```bash
 mkdir -p ~/rke2-lab
 cd ~/rke2-lab
-# copy main.go into this folder
+# copy main.go and go.mod into this folder
 ```
 
-Confirm the file is there:
+Confirm the files are there:
 
 ```bash
 ls -la
 ```
 
-You should see `main.go`.
+You should see `main.go` and `go.mod`.
+
+`go.mod` is the Go module file. It only declares the module's name and the
+minimum Go version — this project uses the standard library only, so there
+are no dependencies to download and nothing to `go get`.
 
 ---
 
@@ -68,6 +72,9 @@ go build -o setup main.go
 
 This produces a single binary named `setup` in the current folder. If the
 command finishes with no output, the build succeeded.
+
+(Because `go.mod` is present, plain `go build` also works — it would just
+name the binary after the module instead of `setup`.)
 
 Make sure it's executable and runnable:
 
@@ -97,6 +104,7 @@ Read through the available flags:
 | `--configure` | `-cfg`     | fill those templates with fake data for 3 servers |
 | `--check`     | `-chk`     | simulate a connectivity check                     |
 | `--deploy`    | `-d`       | simulate an RKE2 deployment                       |
+| `--status`    | `-s`       | show a simulated cluster health summary           |
 
 ---
 
@@ -176,21 +184,40 @@ is printed showing all servers as `Ready`.
 
 ---
 
-## Step 9 — Combine flags in one run
+## Step 9 — Check the cluster's health
+
+```bash
+./setup --status
+```
+
+This prints a simulated health summary of the "running" cluster: the RKE2
+version, how many nodes are `Ready`, a per-node table with each node's role
+and uptime, and the state of etcd and the Kubernetes API endpoint.
+
+Like every other flag, none of this is real — the uptimes are randomly
+generated each run, so run it twice and compare.
+
+**Try it yourself:** the first server in `servers.yaml` is shown with the
+role `leader` and the rest as `server`. Where in `main.go` is that decided?
+(Hint: `--deploy` makes the same distinction.)
+
+---
+
+## Step 10 — Combine flags in one run
 
 The tool supports chaining flags together, in either order:
 
 ```bash
 rm -f hosts.ini servers.yaml   # start clean
-./setup -i -cfg -chk -d
+./setup -i -cfg -chk -d -s
 ```
 
-This runs init → configure → check → deploy in a single command, in that
-fixed order, regardless of how you typed the flags.
+This runs init → configure → check → deploy → status in a single command, in
+that fixed order, regardless of how you typed the flags.
 
 ---
 
-## Step 10 — Clean up
+## Step 11 — Clean up
 
 When you're done experimenting:
 
@@ -207,3 +234,4 @@ rm -f hosts.ini servers.yaml setup
 3. Why might a real-world version of this tool use a proper YAML library instead of a hand-written parser?
 4. What would you need to change in `main.go` to support a 4th or 5th server?
 5. `--configure` overwrites existing files without asking. Is that good or risky design? How would you improve it?
+6. `--status` happily reports a healthy cluster even if you never ran `--deploy`. Where does it get its data from, and what would a real version have to query instead?
