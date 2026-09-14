@@ -66,7 +66,7 @@ need to paste code in.
 
 ## Step 3 — Add the project files
 
-Copy `CLAUDE.md` and the `.claude/` directory (containing
+From claude_files copy `CLAUDE.md` and the `.claude/` directory (containing
 `settings.json` and `skills/add-cli-flag/SKILL.md`) into your
 `setup-lab/` folder, alongside `main.go`:
 
